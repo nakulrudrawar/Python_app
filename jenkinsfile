@@ -2,63 +2,48 @@ pipeline {
     agent any
 
     environment {
-        SERVER_IP      = '172.31.18.45'
-        SSH_CREDENTIAL = 'node-pipeline-key'
-        REPO_URL       = 'https://github.com/nakulrudrawar/Python_app.git'
-        BRANCH         = 'main'
-        REMOTE_USER    = 'ubuntu'
-        REMOTE_PATH    = '/home/ubuntu/Python_app'
+        SSH_CRED = 'node-pipeline-key'
+        SERVER_IP = '172.31.18.45'
+        REMOTE_USER = 'ubuntu'
+        APP_DIR = '/home/ubuntu/pythonapp'
     }
-    
-    
+
     stages {
-        stage('Clone Repository') {
+        stage('Clone Repo') {
             steps {
-                git branch: "${BRANCH}", url: "${REPO_URL}"
+                git url: 'https://github.com/nakulrudrawar/Python_app.git', branch: 'main'
             }
         }
 
-        stage('Upload Files to target-server') {
+        stage('Deploy to Server') {
             steps {
-                sshagent([SSH_CREDENTIAL]) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "mkdir -p ${REMOTE_PATH}"
-                        scp -r app.py requirements.txt ${REMOTE_USER}@${SERVER_IP}:${REMOTE_PATH}/
-                    """
+                sshagent(credentials: ["${SSH_CRED}"]) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} "mkdir -p ${APP_DIR}"
+                        scp -r Dockerfile README.md app.py requirements.txt test ${REMOTE_USER}@${SERVER_IP}:${APP_DIR}/
+                    '''
                 }
             }
         }
 
-        stage('Install Dependencies & Start App on the target server') {
+        stage('Install & Run App') {
             steps {
-                sshagent([SSH_CREDENTIAL]) {
+                sshagent(["${SSH_CRED}"]) {
                     sh """
                         ssh -o StrictHostKeyChecking=no ${REMOTE_USER}@${SERVER_IP} '
                             sudo apt update &&
                             sudo apt install -y python3-venv python3-pip &&
-                            cd ${REMOTE_PATH} &&
+                            cd ${APP_DIR} &&
                             python3 -m venv venv &&
                             source venv/bin/activate &&
                             pip install --upgrade pip &&
                             pip install -r requirements.txt &&
-                            nohup gunicorn -w 4 -b 0.0.0.0:5000 app:app > app.log 2>&1 &
-                            sleep 2
-                            '
+                            nohup python3 app.py --host=0.0.0.0 > app.log 2>&1 &
+                            exit 0
+                        '
                     """
                 }
             }
         }
     }
-
-    post {
-        success {
-            echo '✅ Application deployed successfully!'
-        }
-        failure {
-            echo '❌ Deployment failed.'
-        }
-    }
 }
-
-
-
