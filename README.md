@@ -26,4 +26,4 @@ python3 app.py
 ```
 
 ## Deployment
-The application is automatically deployed using the Jenkinsfile through CI/CD pipeline.
+The application is automatically deployed using the Jenkinsfile through CI/CD pipeline....
