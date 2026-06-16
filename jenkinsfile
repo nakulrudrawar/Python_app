@@ -35,7 +35,7 @@ pipeline {
                             sudo apt install -y python3-venv python3-pip &&
                             cd ${APP_DIR} &&
                             python3 -m venv venv &&
-                            sudo source venv/bin/activate &&
+                            source venv/bin/activate &&
                             sudo pip install --upgrade pip &&
                             sudo pip install -r requirements.txt &&
                             sudo nohup python3 app.py --host=0.0.0.0 > app.log 2>&1 &
