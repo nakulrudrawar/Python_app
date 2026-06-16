@@ -5,7 +5,7 @@ pipeline {
         SSH_CRED = 'node-pipeline-key'
         SERVER_IP = '172.31.18.45'
         REMOTE_USER = 'ubuntu'
-        APP_DIR = '/home/ubuntu/pythonapp'
+        APP_DIR = '/home/ubuntu/Python_app'
     }
 
     stages {
