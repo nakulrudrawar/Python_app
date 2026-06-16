@@ -41,8 +41,8 @@ pipeline {
                             source venv/bin/activate &&
                             pip install --upgrade pip &&
                             pip install -r requirements.txt &&
-                            nohup python3 app.py --host=0.0.0.0 > app.log 2>&1 &
-                            exit 0
+                            pkill -f "python3 app.py" || true &&
+                            nohup python3 app.py > app.log 2>&1 &
                         '
                     """
                 }
